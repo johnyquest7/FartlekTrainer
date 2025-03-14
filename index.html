@@ -4,11 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#3498db">
+  <link rel="icon" type="image/png" href="/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="Fartlek Trainer" />
+  <link rel="manifest" href="/favicon/site.webmanifest" />
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <!-- Add apple-touch-startup-image for PWA splash screen -->
-  <link rel="apple-touch-startup-image" href="icon-512.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-startup-image" href="icons/icon-512.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <title>Fartlek Trainer</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/styles.css">
@@ -165,6 +171,7 @@
     <div class="button-group">
       <button id="start-workout">Start Workout</button>
       <button id="save-setup-workout">Save Workout</button>
+      <button id="view-tracker-btn" class="secondary-button">View History</button>
     </div>
     
     <div class="saved-workouts">
@@ -190,6 +197,39 @@
     <button id="save-workout">Save Workout</button>
     <button id="return-home">New Workout</button>
   </div>
+  
+  <!-- Workout History Tracker Screen -->
+  <div id="tracker-screen" class="section tracker-screen fullpage-screen">
+    <div class="tracker-header">
+      <h2>Workout History</h2>
+      <button id="return-from-tracker" class="back-button">Back</button>
+    </div>
+    
+    <div class="stats-container" id="stats-container">
+      <div class="stat-box">
+        <h3>Total Workouts</h3>
+        <div class="stat-value" id="total-workouts">0</div>
+      </div>
+      <div class="stat-box">
+        <h3>Total Time</h3>
+        <div class="stat-value" id="total-time">0:00</div>
+      </div>
+      <div class="stat-box">
+        <h3>Total Distance</h3>
+        <div class="stat-value" id="total-distance">0 mi/km</div>
+      </div>
+    </div>
+    
+    <div class="filter-controls">
+      <button id="filter-week" class="filter-btn">This Week</button>
+      <button id="filter-month" class="filter-btn">This Month</button>
+      <button id="filter-all" class="filter-btn active">All Time</button>
+    </div>
+    
+    <div class="workout-history" id="workout-history-list">
+      <!-- Workout history items will be populated here -->
+    </div>
+  </div>
 
   <!-- Core app modules -->
   <script src="js/config.js"></script>
@@ -197,6 +237,7 @@
   <script src="js/audio.js"></script>
   <script src="js/speech.js"></script>
   <script src="js/timer.js"></script>
+  <script src="js/workout_tracker.js"></script>
   <script src="js/workout.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/menu.js"></script>

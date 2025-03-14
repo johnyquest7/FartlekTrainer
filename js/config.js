@@ -38,6 +38,7 @@ const APP = {
     repeatsInput: document.getElementById('repeats'),
     coolDownInput: document.getElementById('cool-down-time'),
     workoutNameInput: document.getElementById('workout-name'),
+    viewTrackerBtn: document.getElementById('view-tracker-btn'),
     
     // Speed input elements
     fastRunSpeed: document.getElementById('fast-run-speed'),

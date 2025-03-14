@@ -11,11 +11,14 @@ const ASSETS = [
   '/js/speech.js',
   '/js/timer.js',
   '/js/workout.js',
+  '/js/workout_tracker.js',
   '/js/storage.js',
+  '/js/menu.js',
+  '/js/speed.js',
   '/js/app.js',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/icons/icon-192.png',
+  '/icons/icon-512.png'
 ];
 
 // Install event - cache assets

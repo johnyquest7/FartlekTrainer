@@ -27,6 +27,9 @@ function initApp() {
   // Initialize menu
   MENU.init();
   
+  // Initialize workout tracker
+  TRACKER.init();
+  
   // Load user preferences
   STORAGE.loadPreferences();
   
@@ -48,6 +51,70 @@ function initApp() {
   APP.elements.saveWorkoutBtn.addEventListener('click', STORAGE.saveWorkout.bind(STORAGE));
   APP.elements.returnHomeBtn.addEventListener('click', WORKOUT.returnToHome.bind(WORKOUT));
   APP.elements.saveSetupWorkoutBtn.addEventListener('click', STORAGE.saveSetupWorkout.bind(STORAGE));
+  
+  // Make sure tracker button event is set up - use direct element access
+  const viewTrackerBtn = document.getElementById('view-tracker-btn');
+  const trackerScreen = document.getElementById('tracker-screen');
+  const returnFromTrackerBtn = document.getElementById('return-from-tracker');
+  
+  if (viewTrackerBtn && trackerScreen) {
+    console.log('Setting up view tracker button in app.js');
+    viewTrackerBtn.addEventListener('click', function() {
+      console.log('View History button clicked');
+      
+      // Direct DOM manipulation approach
+      document.getElementById('setup-screen').classList.remove('active');
+      document.getElementById('workout-screen').classList.remove('active');
+      document.getElementById('summary-screen').classList.remove('active');
+      trackerScreen.classList.add('active');
+      
+      // Get completed workouts
+      const completedWorkouts = JSON.parse(localStorage.getItem('completedWorkouts')) || [];
+      console.log(`Found ${completedWorkouts.length} completed workouts`);
+      
+      // Direct calculation of total time
+      let totalSeconds = 0;
+      completedWorkouts.forEach((workout, i) => {
+        if (workout && typeof workout.totalTime === 'number') {
+          totalSeconds += workout.totalTime;
+          console.log(`Workout ${i+1} time: ${workout.totalTime}s, total: ${totalSeconds}s`);
+        }
+      });
+      
+      // Format time
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = Math.floor(totalSeconds % 60);
+      
+      let timeDisplay = '0:00';
+      if (hours > 0) {
+        timeDisplay = `${hours}h ${minutes}m`;
+      } else if (minutes > 0) {
+        timeDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      } else {
+        timeDisplay = `0:${seconds.toString().padStart(2, '0')}`;
+      }
+      
+      // Set the values directly
+      document.getElementById('total-workouts').textContent = completedWorkouts.length.toString();
+      document.getElementById('total-time').textContent = timeDisplay;
+      console.log(`Direct update: ${completedWorkouts.length} workouts, total time: ${timeDisplay}`);
+      
+      // Also call tracker method to update the full data display
+      TRACKER.loadWorkoutHistory();
+    });
+    
+    // Also set up the return button
+    if (returnFromTrackerBtn) {
+      returnFromTrackerBtn.addEventListener('click', function() {
+        console.log('Return from tracker button clicked');
+        trackerScreen.classList.remove('active');
+        document.getElementById('setup-screen').classList.add('active');
+      });
+    }
+  } else {
+    console.error('View tracker button or tracker screen not found in app.js');
+  }
   
   // Register service worker for PWA
   if ('serviceWorker' in navigator) {
