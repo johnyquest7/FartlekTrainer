@@ -1,0 +1,440 @@
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --warning-color: #e74c3c;
+  --dark-color: #34495e;
+  --light-color: #ecf0f1;
+  --transition-speed: 0.3s;
+  --menu-width: 280px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  line-height: 1.6;
+  padding: 10px;
+  max-width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Prevent body scrolling when menu is open */
+body.no-scroll {
+  overflow: hidden;
+}
+
+@media (min-width: 600px) {
+  body {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+}
+
+header {
+  margin-bottom: 10px;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+}
+
+/* Menu Button and Hamburger Icon */
+.menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  margin-right: 10px;
+  width: auto;
+  margin-top: 0;
+}
+
+.hamburger-icon {
+  width: 24px;
+  height: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background-color: var(--primary-color);
+  border-radius: 3px;
+}
+
+/* Settings Panel */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: var(--menu-width);
+  max-width: 90%;
+  height: 100%;
+  background-color: white;
+  z-index: 1010;
+  overflow-y: auto;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+  transition: left var(--transition-speed);
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.settings-panel.open {
+  left: 0;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.settings-header h2 {
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--dark-color);
+  width: auto;
+  margin: 0;
+  padding: 0 10px;
+}
+
+.settings-section {
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+}
+
+.settings-section h3 {
+  margin-bottom: 10px;
+  color: var(--primary-color);
+}
+
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: none;
+}
+
+.overlay.visible {
+  display: block;
+}
+
+/* For full screen mode */
+.fullscreen-mode {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 990;
+  background-color: var(--light-color);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+h1 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.section {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.section-mini {
+  background-color: white;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+h2 {
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color var(--transition-speed);
+  width: 100%;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+/* Speed input styles */
+.fast-run-container, .slow-run-container {
+  margin-bottom: 20px;
+}
+
+.speed-selector {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd;
+}
+
+.speed-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.speed-unit {
+  padding: 10px;
+  min-width: 60px;
+  text-align: center;
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  border-left: none;
+  border-radius: 0 5px 5px 0;
+}
+
+#fast-run-speed, #slow-run-speed {
+  border-radius: 5px 0 0 5px;
+  border-right: none;
+}
+
+.speed-range {
+  display: block;
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: 5px;
+}
+
+.timer-display {
+  font-size: 3rem;
+  text-align: center;
+  margin: 20px 0;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.current-stage {
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-weight: bold;
+  transition: background-color var(--transition-speed);
+}
+
+.warm-up {
+  background-color: #f39c12;
+  color: white;
+}
+
+.fast-run {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.slow-run {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.cool-down {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.progress-container {
+  height: 8px;
+  background-color: #ddd;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--primary-color);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 1s linear;
+}
+
+.session-summary {
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.control-buttons, .button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.control-buttons button, .button-group button {
+  flex: 1;
+}
+
+.pause-button {
+  background-color: #f39c12;
+}
+
+.stop-button {
+  background-color: var(--warning-color);
+}
+
+.workout-screen, .summary-screen {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+.next-up {
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #7f8c8d;
+}
+
+.saved-workouts {
+  margin-top: 20px;
+}
+
+.saved-workout-item {
+  background-color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed);
+}
+
+.saved-workout-item:hover {
+  background-color: #eee;
+}
+
+.workout-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+
+.workout-actions button {
+  width: auto;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.delete-workout {
+  background-color: var(--warning-color);
+}
+
+/* Speed display in current workout */
+.speed-display {
+  text-align: center;
+  font-size: 1.1rem;
+  margin-top: -10px;
+  margin-bottom: 15px;
+  color: #666;
+}
+
+@media (max-width: 400px) {
+  body {
+    padding: 5px;
+  }
+  
+  .section {
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .timer-display {
+    font-size: 3.5rem;
+    margin: 15px 0;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+  }
+  
+  header p {
+    font-size: 0.9rem;
+  }
+  
+  .current-stage {
+    font-size: 1.8rem;
+    padding: 12px;
+  }
+  
+  button {
+    padding: 15px;
+  }
+}
