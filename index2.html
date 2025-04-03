@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="description" content="5K Training Progressive Web App">
+    <title>RunReady 5K Trainer</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .workout-card {
+            transition: all 0.3s ease;
+        }
+        
+        .workout-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        /* Custom audio player styles */
+        .audio-player {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            outline: none;
+        }
+        
+        .audio-player::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col">
+        <!-- Header -->
+        <header class="bg-indigo-600 text-white p-4 rounded-b-2xl shadow-md">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold">RunReady 5K</h1>
+                <button id="installBtn" class="hidden bg-white text-indigo-600 px-3 py-1 rounded-full text-sm font-medium">
+                    Install App
+                </button>
+            </div>
+            <p class="text-indigo-100 mt-1">Your personal 5K training companion</p>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="flex-1 p-4 overflow-y-auto">
+            <!-- Setup Section -->
+            <section id="setupSection" class="mb-8">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Get Started</h2>
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                    <h3 class="font-medium text-indigo-800 mb-2">Select Your Experience Level</h3>
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <button onclick="selectExperience('beginner')" class="experience-btn bg-white border border-gray-300 rounded-lg py-2 px-1 text-sm font-medium hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <i class="fas fa-seedling text-green-500 mb-1"></i><br>
+                            Beginner
+                        </button>
+                        <button onclick="selectExperience('intermediate')" class="experience-btn bg-white border border-gray-300 rounded-lg py-2 px-1 text-sm font-medium hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <i class="fas fa-running text-blue-500 mb-1"></i><br>
+                            Intermediate
+                        </button>
+                        <button onclick="selectExperience('advanced')" class="experience-btn bg-white border border-gray-300 rounded-lg py-2 px-1 text-sm font-medium hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <i class="fas fa-fire text-red-500 mb-1"></i><br>
+                            Advanced
+                        </button>
+                    </div>
+                    
+                    <h3 class="font-medium text-indigo-800 mb-2">Training Duration</h3>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="selectDuration(6)" class="duration-btn bg-white border border-gray-300 rounded-lg py-2 px-1 text-sm font-medium hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <i class="far fa-calendar-alt text-indigo-500 mb-1"></i><br>
+                            6 Weeks
+                        </button>
+                        <button onclick="selectDuration(8)" class="duration-btn bg-white border border-gray-300 rounded-lg py-2 px-1 text-sm font-medium hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <i class="far fa-calendar-alt text-indigo-600 mb-1"></i><br>
+                            8 Weeks
+                        </button>
+                        <button onclick="selectDuration(12)" class="duration-btn bg-white border border-gray-300 rounded-lg py-2 px-1 text-sm font-medium hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <i class="far fa-calendar-alt text-indigo-700 mb-1"></i><br>
+                            12 Weeks
+                        </button>
+                    </div>
+                    
+                    <button id="startTrainingBtn" class="mt-6 w-full bg-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50" disabled>
+                        Start Training Program
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Dashboard Section (hidden initially) -->
+            <section id="dashboardSection" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Your Progress</h2>
+                    <button id="resetBtn" class="text-sm text-indigo-600 font-medium hover:text-indigo-800">
+                        Reset Program
+                    </button>
+                </div>
+                
+                <!-- Progress Overview -->
+                <div class="bg-indigo-50 p-4 rounded-lg mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-medium text-indigo-800">Week <span id="currentWeek">1</span> of <span id="totalWeeks">8</span></h3>
+                        <span class="text-sm bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full" id="experienceLevel">Intermediate</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-center my-4">
+                        <div class="relative w-32 h-32">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                                <circle class="text-indigo-600 progress-ring__circle" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" id="progressCircle" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span class="text-2xl font-bold text-gray-800" id="progressPercent">25%</span>
+                                <span class="text-xs text-gray-600">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-white p-2 rounded-lg">
+                            <div class="text-sm text-gray-500">Workouts</div>
+                            <div class="font-bold text-indigo-600"><span id="completedWorkouts">2</span>/<span id="totalWorkouts">24</span></div>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg">
+                            <div class="text-sm text-gray-500">Distance</div>
+                            <div class="font-bold text-indigo-600"><span id="totalDistance">8.5</span> km</div>
+                        </div>
+                        <div class="bg-white p-2 rounded-lg">
+                            <div class="text-sm text-gray-500">Time</div>
+                            <div class="font-bold text-indigo-600"><span id="totalTime">2</span> hrs</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current Week Workouts -->
+                <h3 class="font-medium text-gray-800 mb-2">This Week's Workouts</h3>
+                <div id="workoutsContainer" class="space-y-3 mb-6">
+                    <!-- Workout cards will be inserted here by JavaScript -->
+                </div>
+                
+                <!-- Audio Player Section -->
+                <div id="audioPlayerSection" class="hidden bg-gray-50 p-4 rounded-lg sticky bottom-0 border-t border-gray-200">
+                    <h3 class="font-medium text-gray-800 mb-2 flex items-center">
+                        <i class="fas fa-headphones text-indigo-600 mr-2"></i>
+                        <span id="currentWorkoutName">Warm Up Session</span>
+                    </h3>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs text-gray-500" id="currentTime">0:00</span>
+                        <span class="text-xs text-gray-500" id="durationTime">3:00</span>
+                    </div>
+                    <input type="range" id="audioProgress" class="audio-player mb-2" value="0" min="0">
+                    <div class="flex justify-center space-x-6">
+                        <button id="prevAudioBtn" class="text-gray-600 hover:text-indigo-600">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button id="playPauseBtn" class="bg-indigo-600 text-white p-3 rounded-full hover:bg-indigo-700">
+                            <i class="fas fa-play" id="playPauseIcon"></i>
+                        </button>
+                        <button id="nextAudioBtn" class="text-gray-600 hover:text-indigo-600">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Bottom Navigation -->
+        <nav class="bg-white border-t border-gray-200 p-2 flex justify-around">
+            <button id="homeBtn" class="p-2 text-indigo-600 rounded-full">
+                <i class="fas fa-home text-xl"></i>
+            </button>
+            <button id="calendarBtn" class="p-2 text-gray-500 rounded-full hover:text-indigo-600">
+                <i class="far fa-calendar text-xl"></i>
+            </button>
+            <button id="statsBtn" class="p-2 text-gray-500 rounded-full hover:text-indigo-600">
+                <i class="fas fa-chart-line text-xl"></i>
+            </button>
+            <button id="settingsBtn" class="p-2 text-gray-500 rounded-full hover:text-indigo-600">
+                <i class="fas fa-cog text-xl"></i>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // App State
+        const state = {
+            experience: null,
+            duration: null,
+            currentWeek: 1,
+            completedWorkouts: [],
+            audio: new Audio(),
+            audioFiles: {
+                warmup: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg",
+                run: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg",
+                cooldown: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg",
+                instruction: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+            },
+            currentAudio: null,
+            isPlaying: false
+        };
+        
+        // Training Programs
+        const programs = {
+            beginner: {
+                6: generateBeginnerProgram(6),
+                8: generateBeginnerProgram(8),
+                12: generateBeginnerProgram(12)
+            },
+            intermediate: {
+                6: generateIntermediateProgram(6),
+                8: generateIntermediateProgram(8),
+                12: generateIntermediateProgram(12)
+            },
+            advanced: {
+                6: generateAdvancedProgram(6),
+                8: generateAdvancedProgram(8),
+                12: generateAdvancedProgram(12)
+            }
+        };
+        
+        // DOM Elements
+        const setupSection = document.getElementById('setupSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const startTrainingBtn = document.getElementById('startTrainingBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const currentWeekEl = document.getElementById('currentWeek');
+        const totalWeeksEl = document.getElementById('totalWeeks');
+        const experienceLevelEl = document.getElementById('experienceLevel');
+        const progressCircle = document.getElementById('progressCircle');
+        const progressPercent = document.getElementById('progressPercent');
+        const completedWorkoutsEl = document.getElementById('completedWorkouts');
+        const totalWorkoutsEl = document.getElementById('totalWorkouts');
+        const totalDistanceEl = document.getElementById('totalDistance');
+        const totalTimeEl = document.getElementById('totalTime');
+        const workoutsContainer = document.getElementById('workoutsContainer');
+        const audioPlayerSection = document.getElementById('audioPlayerSection');
+        const currentWorkoutNameEl = document.getElementById('currentWorkoutName');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationTimeEl = document.getElementById('durationTime');
+        const audioProgress = document.getElementById('audioProgress');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        const prevAudioBtn = document.getElementById('prevAudioBtn');
+        const nextAudioBtn = document.getElementById('nextAudioBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const installBtn = document.getElementById('installBtn');
+        
+        // Initialize the app
+        function init() {
+            // Check for saved state in localStorage
+            const savedState = localStorage.getItem('runReady5KState');
+            if (savedState) {
+                const parsedState = JSON.parse(savedState);
+                Object.assign(state, parsedState);
+                
+                // If a program was in progress, show dashboard
+                if (state.experience && state.duration) {
+                    showDashboard();
+                    renderWorkouts();
+                    updateProgress();
+                }
+            }
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Set up service worker for PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    }).catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
+            
+            // Set up install prompt
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBtn.classList.remove('hidden');
+            });
+            
+            installBtn.addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted install prompt');
+                    } else {
+                        console.log('User dismissed install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Experience and duration buttons
+            document.querySelectorAll('.experience-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.experience-btn').forEach(b => {
+                        b.classList.remove('bg-indigo-100', 'border-indigo-500', 'text-indigo-800');
+                        b.classList.add('bg-white', 'border-gray-300');
+                    });
+                    this.classList.add('bg-indigo-100', 'border-indigo-500', 'text-indigo-800');
+                    this.classList.remove('bg-white', 'border-gray-300');
+                });
+            });
+            
+            document.querySelectorAll('.duration-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.duration-btn').forEach(b => {
+                        b.classList.remove('bg-indigo-100', 'border-indigo-500', 'text-indigo-800');
+                        b.classList.add('bg-white', 'border-gray-300');
+                    });
+                    this.classList.add('bg-indigo-100', 'border-indigo-500', 'text-indigo-800');
+                    this.classList.remove('bg-white', 'border-gray-300');
+                });
+            });
+            
+            // Start training button
+            startTrainingBtn.addEventListener('click', startTraining);
+            
+            // Reset button
+            resetBtn.addEventListener('click', resetTraining);
+            
+            // Audio player controls
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            prevAudioBtn.addEventListener('click', playPreviousAudio);
+            nextAudioBtn.addEventListener('click', playNextAudio);
+            audioProgress.addEventListener('input', seekAudio);
+            
+            // Navigation buttons
+            homeBtn.addEventListener('click', () => {
+                document.querySelectorAll('nav button').forEach(btn => {
+                    btn.classList.remove('text-indigo-600');
+                    btn.classList.add('text-gray-500');
+                });
+                homeBtn.classList.add('text-indigo-600');
+                homeBtn.classList.remove('text-gray-500');
+            });
+            
+            document.querySelectorAll('nav button:not(#homeBtn)').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('nav button').forEach(b => {
+                        b.classList.remove('text-indigo-600');
+                        b.classList.add('text-gray-500');
+                    });
+                    this.classList.add('text-indigo-600');
+                    this.classList.remove('text-gray-500');
+                    alert(`${this.id.replace('Btn', '')} feature coming soon!`);
+                });
+            });
+            
+            // Audio time update
+            state.audio.addEventListener('timeupdate', updateAudioProgress);
+            state.audio.addEventListener('ended', onAudioEnded);
+        }
+        
+        // Select experience level
+        function selectExperience(level) {
+            state.experience = level;
+            checkStartButton();
+        }
+        
+        // Select duration
+        function selectDuration(weeks) {
+            state.duration = weeks;
+            checkStartButton();
+        }
+        
+        // Check if start button should be enabled
+        function checkStartButton() {
+            if (state.experience && state.duration) {
+                startTrainingBtn.disabled = false;
+            } else {
+                startTrainingBtn.disabled = true;
+            }
+        }
+        
+        // Start training program
+        function startTraining() {
+            state.currentWeek = 1;
+            state.completedWorkouts = [];
+            saveState();
+            showDashboard();
+            renderWorkouts();
+            updateProgress();
+        }
+        
+        // Reset training program
+        function resetTraining() {
+            if (confirm('Are you sure you want to reset your training program? All progress will be lost.')) {
+                state.experience = null;
+                state.duration = null;
+                state.currentWeek = 1;
+                state.completedWorkouts = [];
+                saveState();
+                showSetup();
+            }
+        }
+        
+        // Show setup screen
+        function showSetup() {
+            setupSection.classList.remove('hidden');
+            dashboardSection.classList.add('hidden');
+            audioPlayerSection.classList.add('hidden');
+            stopAudio();
+        }
+        
+        // Show dashboard
+        function showDashboard() {
+            setupSection.classList.add('hidden');
+            dashboardSection.classList.remove('hidden');
+            
+            // Update dashboard info
+            currentWeekEl.textContent = state.currentWeek;
+            totalWeeksEl.textContent = state.duration;
+            experienceLevelEl.textContent = state.experience.charAt(0).toUpperCase() + state.experience.slice(1);
+        }
+        
+        // Render workouts for current week
+        function renderWorkouts() {
+            workoutsContainer.innerHTML = '';
+            
+            const program = programs[state.experience][state.duration];
+            const weekWorkouts = program[state.currentWeek - 1];
+            
+            weekWorkouts.forEach((workout, index) => {
+                const isCompleted = state.completedWorkouts.includes(`${state.currentWeek}-${index}`);
+                
+                const workoutCard = document.createElement('div');
+                workoutCard.className = `workout-card bg-white p-4 rounded-lg border ${isCompleted ? 'border-green-300 bg-green-50' : 'border-gray-200'} shadow-sm`;
+                workoutCard.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-medium text-gray-800">${workout.name}</h4>
+                        <span class="text-xs px-2 py-1 rounded-full ${isCompleted ? 'bg-green-100 text-green-800' : 'bg-indigo-100 text-indigo-800'}">
+                            ${isCompleted ? 'Completed' : workout.duration} min
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">${workout.description}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-1">
+                            ${workout.type === 'run' ? 
+                                `<span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">Run</span>` : 
+                                workout.type === 'walk' ?
+                                `<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Walk</span>` :
+                                `<span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">${workout.type}</span>`
+                            }
+                            <span class="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">${workout.distance || '--'} km</span>
+                        </div>
+                        <button class="workout-action-btn text-sm ${isCompleted ? 'text-green-600 hover:text-green-800' : 'text-indigo-600 hover:text-indigo-800'} font-medium">
+                            ${isCompleted ? 'Completed <i class="fas fa-check ml-1"></i>' : 'Start <i class="fas fa-play ml-1"></i>'}
+                        </button>
+                    </div>
+                `;
+                
+                const actionBtn = workoutCard.querySelector('.workout-action-btn');
+                actionBtn.addEventListener('click', () => {
+                    if (isCompleted) return;
+                    
+                    // Mark as completed
+                    state.completedWorkouts.push(`${state.currentWeek}-${index}`);
+                    saveState();
+                    renderWorkouts();
+                    updateProgress();
+                    
+                    // Start audio guidance
+                    startWorkoutAudio(workout);
+                });
+                
+                workoutsContainer.appendChild(workoutCard);
+            });
+        }
+        
+        // Update progress indicators
+        function updateProgress() {
+            const program = programs[state.experience][state.duration];
+            const totalWorkouts = program.flat().length;
+            const completedCount = state.completedWorkouts.length;
+            const percentComplete = Math.round((completedCount / totalWorkouts) * 100);
+            
+            // Update progress circle
+            const circumference = 2 * Math.PI * 40;
+            const offset = circumference - (percentComplete / 100) * circumference;
+            progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+            progressCircle.style.strokeDashoffset = offset;
+            
+            // Update text indicators
+            progressPercent.textContent = `${percentComplete}%`;
+            completedWorkoutsEl.textContent = completedCount;
+            totalWorkoutsEl.textContent = totalWorkouts;
+            
+            // Calculate total distance and time (simplified)
+            let totalDistance = 0;
+            let totalTime = 0;
+            
+            program.forEach((week, weekIndex) => {
+                week.forEach((workout, workoutIndex) => {
+                    if (state.completedWorkouts.includes(`${weekIndex + 1}-${workoutIndex}`)) {
+                        totalDistance += workout.distance || 0;
+                        totalTime += workout.duration || 0;
+                    }
+                });
+            });
+            
+            totalDistanceEl.textContent = totalDistance.toFixed(1);
+            totalTimeEl.textContent = Math.round(totalTime / 60);
+            
+            // Check if week is complete and advance to next week
+            const currentWeekWorkouts = program[state.currentWeek - 1];
+            const currentWeekCompleted = state.completedWorkouts.filter(id => 
+                id.startsWith(`${state.currentWeek}-`)
+            ).length;
+            
+            if (currentWeekCompleted === currentWeekWorkouts.length && state.currentWeek < state.duration) {
+                state.currentWeek++;
+                saveState();
+                currentWeekEl.textContent = state.currentWeek;
+                renderWorkouts();
+            }
+        }
+        
+        // Start workout audio guidance
+        function startWorkoutAudio(workout) {
+            audioPlayerSection.classList.remove('hidden');
+            currentWorkoutNameEl.textContent = workout.name;
+            
+            // In a real app, we would have specific audio files for each workout type
+            let audioFile;
+            if (workout.type.includes('warm')) {
+                audioFile = state.audioFiles.warmup;
+                state.currentAudio = 'warmup';
+            } else if (workout.type === 'run') {
+                audioFile = state.audioFiles.run;
+                state.currentAudio = 'run';
+            } else if (workout.type.includes('cool')) {
+                audioFile = state.audioFiles.cooldown;
+                state.currentAudio = 'cooldown';
+            } else {
+                audioFile = state.audioFiles.instruction;
+                state.currentAudio = 'instruction';
+            }
+            
+            state.audio.src = audioFile;
+            state.audio.load();
+            playAudio();
+        }
+        
+        // Play audio
+        function playAudio() {
+            state.audio.play()
+                .then(() => {
+                    state.isPlaying = true;
+                    playPauseIcon.classList.remove('fa-play');
+                    playPauseIcon.classList.add('fa-pause');
+                    durationTimeEl.textContent = formatTime(state.audio.duration);
+                })
+                .catch(error => {
+                    console.error('Error playing audio:', error);
+                });
+        }
+        
+        // Pause audio
+        function pauseAudio() {
+            state.audio.pause();
+            state.isPlaying = false;
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+        }
+        
+        // Stop audio
+        function stopAudio() {
+            pauseAudio();
+            state.audio.currentTime = 0;
+            currentTimeEl.textContent = '0:00';
+            audioProgress.value = 0;
+        }
+        
+        // Toggle play/pause
+        function togglePlayPause() {
+            if (state.isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+        
+        // Play previous audio segment
+        function playPreviousAudio() {
+            // In a real app, this would go to the previous audio segment
+            state.audio.currentTime = Math.max(0, state.audio.currentTime - 15);
+        }
+        
+        // Play next audio segment
+        function playNextAudio() {
+            // In a real app, this would go to the next audio segment
+            state.audio.currentTime = Math.min(state.audio.duration, state.audio.currentTime + 15);
+        }
+        
+        // Seek audio
+        function seekAudio() {
+            const seekTime = (audioProgress.value / 100) * state.audio.duration;
+            state.audio.currentTime = seekTime;
+        }
+        
+        // Update audio progress bar
+        function updateAudioProgress() {
+            const currentTime = state.audio.currentTime;
+            const duration = state.audio.duration || 1;
+            const progressPercent = (currentTime / duration) * 100;
+            
+            audioProgress.value = progressPercent;
+            currentTimeEl.textContent = formatTime(currentTime);
+        }
+        
+        // Format time (seconds to MM:SS)
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        // Handle audio ended
+        function onAudioEnded() {
+            state.isPlaying = false;
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+        }
+        
+        // Save app state to localStorage
+        function saveState() {
+            localStorage.setItem('runReady5KState', JSON.stringify({
+                experience: state.experience,
+                duration: state.duration,
+                currentWeek: state.currentWeek,
+                completedWorkouts: state.completedWorkouts
+            }));
+        }
+        
+        // Generate beginner training program
+        function generateBeginnerProgram(weeks) {
+            const program = [];
+            const workoutsPerWeek = 3;
+            
+            for (let week = 1; week <= weeks; week++) {
+                const weekWorkouts = [];
+                
+                // Alternate between two workout patterns each week
+                const pattern = week % 2 === 1 ? 'A' : 'B';
+                
+                for (let day = 1; day <= workoutsPerWeek; day++) {
+                    if (pattern === 'A') {
+                        // Pattern A: Walk/Run intervals
+                        const runInterval = Math.min(1 + Math.floor(week / 2), 5); // Gradually increase run time
+                        const walkInterval = 2;
+                        const intervals = Math.min(3 + Math.floor(week / 2), 6); // Gradually increase intervals
+                        
+                        weekWorkouts.push({
+                            name: `Week ${week} Day ${day}: Walk/Run Intervals`,
+                            description: `${intervals} x ${walkInterval} min walk / ${runInterval} min run`,
+                            type: 'interval',
+                            duration: intervals * (walkInterval + runInterval) + 5,
+                            distance: (intervals * (walkInterval + runInterval) * 0.1).toFixed(1)
+                        });
+                    } else {
+                        // Pattern B: Steady walk with short runs
+                        const runTime = Math.min(1 + Math.floor(week / 3), 3);
+                        const walkTime = 25 - runTime;
+                        
+                        weekWorkouts.push({
+                            name: `Week ${week} Day ${day}: Steady Walk/Run`,
+                            description: `${walkTime} min walk with ${runTime} min run`,
+                            type: 'walk/run',
+                            duration: walkTime + runTime + 5,
+                            distance: ((walkTime + runTime) * 0.1).toFixed(1)
+                        });
+                    }
+                }
+                
+                // Add warmup and cooldown to first and last workout of the week
+                weekWorkouts[0].name = `Week ${week} Day 1: Warm Up + ${weekWorkouts[0].name}`;
+                weekWorkouts[0].description = `5 min warm up walk, then ${weekWorkouts[0].description}`;
+                weekWorkouts[0].duration += 5;
+                
+                weekWorkouts[weekWorkouts.length - 1].name = `Week ${week} Day ${workoutsPerWeek}: ${weekWorkouts[weekWorkouts.length - 1].name} + Cool Down`;
+                weekWorkouts[weekWorkouts.length - 1].description = `${weekWorkouts[weekWorkouts.length - 1].description}, then 5 min cool down walk`;
+                weekWorkouts[weekWorkouts.length - 1].duration += 5;
+                
+                program.push(weekWorkouts);
+            }
+            
+            return program;
+        }
+        
+        // Generate intermediate training program
+        function generateIntermediateProgram(weeks) {
+            const program = [];
+            const workoutsPerWeek = 4;
+            
+            for (let week = 1; week <= weeks; week++) {
+                const weekWorkouts = [];
+                
+                // First workout: Tempo run
+                weekWorkouts.push({
+                    name: `Week ${week} Day 1: Tempo Run`,
+                    description: `10 min warm up, ${5 + week} min tempo run, 5 min cool down`,
+                    type: 'run',
+                    duration: 20 + week,
+                    distance: ((20 + week) * 0.12).toFixed(1)
+                });
+                
+                // Second workout: Interval training
+                const intervalCount = 4 + Math.floor(week / 2);
+                const runInterval = 2 + Math.floor(week / 3);
+                const recoveryInterval = 1;
+                
+                weekWorkouts.push({
+                    name: `Week ${week} Day 2: Interval Training`,
+                    description: `${intervalCount} x ${runInterval} min run with ${recoveryInterval} min recovery`,
+                    type: 'interval',
+                    duration: intervalCount * (runInterval + recoveryInterval) + 10,
+                    distance: (intervalCount * (runInterval + recoveryInterval) * 0.13).toFixed(1)
+                });
+                
+                // Third workout: Easy run
+                weekWorkouts.push({
+                    name: `Week ${week} Day 3: Easy Run`,
+                    description: `${15 + week * 2} min easy pace run`,
+                    type: 'run',
+                    duration: 15 + week * 2,
+                    distance: ((15 + week * 2) * 0.11).toFixed(1)
+                });
+                
+                // Fourth workout: Long run (progressively longer each week)
+                weekWorkouts.push({
+                    name: `Week ${week} Day 4: Long Run`,
+                    description: `${20 + week * 3} min steady pace run`,
+                    type: 'run',
+                    duration: 20 + week * 3,
+                    distance: ((20 + week * 3) * 0.12).toFixed(1)
+                });
+                
+                program.push(weekWorkouts);
+            }
+            
+            return program;
+        }
+        
+        // Generate advanced training program
+        function generateAdvancedProgram(weeks) {
+            const program = [];
+            const workoutsPerWeek = 5;
+            
+            for (let week = 1; week <= weeks; week++) {
+                const weekWorkouts = [];
+                
+                // Monday: Speed work
+                weekWorkouts.push({
+                    name: `Week ${week} Day 1: Speed Work`,
+                    description: `Warm up, 6 x 400m at 5K pace with 200m recovery, cool down`,
+                    type: 'speed',
+                    duration: 45,
+                    distance: 8.0
+                });
+                
+                // Tuesday: Easy run
+                weekWorkouts.push({
+                    name: `Week ${week} Day 2: Recovery Run`,
+                    description: `${30 + week} min easy pace recovery run`,
+                    type: 'run',
+                    duration: 30 + week,
+                    distance: ((30 + week) * 0.12).toFixed(1)
+                });
+                
+                // Wednesday: Tempo run
+                weekWorkouts.push({
+                    name: `Week ${week} Day 3: Tempo Run`,
+                    description: `Warm up, ${15 + week} min at tempo pace, cool down`,
+                    type: 'tempo',
+                    duration: 35 + week,
+                    distance: ((35 + week) * 0.13).toFixed(1)
+                });
+                
+                // Thursday: Hill repeats or easy run
+                if (week % 2 === 1) {
+                    weekWorkouts.push({
+                        name: `Week ${week} Day 4: Hill Repeats`,
+                        description: `Warm up, 6 x 30 sec hill repeats with jog down recovery, cool down`,
+                        type: 'hills',
+                        duration: 40,
+                        distance: 6.5
+                    });
+                } else {
+                    weekWorkouts.push({
+                        name: `Week ${week} Day 4: Easy Run`,
+                        description: `${30 + week} min easy pace run`,
+                        type: 'run',
+                        duration: 30 + week,
+                        distance: ((30 + week) * 0.12).toFixed(1)
+                    });
+                }
+                
+                // Friday: Rest or cross-training (not included in this app)
+                
+                // Saturday: Long run
+                weekWorkouts.push({
+                    name: `Week ${week} Day 5: Long Run`,
+                    description: `${40 + week * 2} min long run at conversational pace`,
+                    type: 'long',
+                    duration: 40 + week * 2,
+                    distance: ((40 + week * 2) * 0.12).toFixed(1)
+                });
+                
+                program.push(weekWorkouts);
+            }
+            
+            return program;
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
